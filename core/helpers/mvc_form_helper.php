@@ -6,11 +6,12 @@ class MvcFormHelper extends MvcHelper {
 
     public function create($model_name, $options=array()) {
         $defaults = array(
-            'action' => $this->controller->action,
-            'controller' => MvcInflector::tableize($model_name),
-            'public' => false,
-            'enctype' => 'application/x-www-form-urlencoded',
-            'is_admin' => false,
+            'action'          => $this->controller->action,
+            'controller'      => MvcInflector::tableize($model_name),
+            'public'          => false,
+            'enctype'         => 'application/x-www-form-urlencoded',
+            'is_admin'        => false,
+			'additional_atts' => array(),
         );
         $options = array_merge($defaults, $options);
         $this->model_name = $model_name;
@@ -24,11 +25,9 @@ class MvcFormHelper extends MvcHelper {
             $router_options['id'] = $object_id;
         }
 
-        if ($options['public']) {
-            $html = '<form enctype="'.$options['enctype'].'" action="'.MvcRouter::public_url($router_options).'" method="post">';
-        } else {
-            $html = '<form enctype="'.$options['enctype'].'" action="'.MvcRouter::admin_url($router_options).'" method="post">';
-        }
+		$additional_atts = self::attributes_html( $options['additional_atts'] );
+		$action          = ( $options['public'] ) ? MvcRouter::public_url( $router_options ) : MvcRouter::admin_url( $router_options );
+		$html            = "<form enctype='{$options['enctype']}' action='{$action}' method='post'{$additional_atts}>";
 
         if ($object_id) {
             $html .= '<input type="hidden" id="'.$this->input_id('hidden_id').'" name="'.$this->input_name('id').'" value="'.$object_id.'" />';

@@ -1,5 +1,5 @@
 <?php echo "<?php\n"; ?>
 
-class <?php echo $name_pluralized ?>Controller extends MvcPublicController {
+class <?php echo $name_pluralized; ?>Controller extends MvcPublicController {
 
 }

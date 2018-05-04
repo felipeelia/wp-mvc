@@ -1,206 +1,208 @@
 <?php
 
 /**
- * Help system for the WPMVC Console. 
+ * Help system for the WPMVC Console.
  * Also provides the capability for shells to be self documenting.
  */
 class HelpShell extends MvcShell {
 
-    protected function get_shell_meta($name) {
-        $exclude_methods = array(
-            '__construct',
-            '__call',
-            'init',
-            'out',
-            'nl',
-            'hr'
-        );
-        
-        $name = MvcInflector::underscore($name);
+	protected function get_shell_meta( $name ) {
+		$exclude_methods = array(
+			'__construct',
+			'__call',
+			'init',
+			'out',
+			'nl',
+			'hr',
+		);
 
-        $shell = new stdClass();
-        $shell->name = $name;
-        $shell->shell_name = $name.'_shell';
-        $shell->class_name = MvcInflector::camelize($shell->shell_name);
-        $shell->title = MvcInflector::titleize($shell->name);
-        $shell->methods = array();
+		$name = MvcInflector::underscore( $name );
 
-        $shell_path = 'shells/'.$shell->shell_name.'.php';
+		$shell             = new stdClass();
+		$shell->name       = $name;
+		$shell->shell_name = $name . '_shell';
+		$shell->class_name = MvcInflector::camelize( $shell->shell_name );
+		$shell->title      = MvcInflector::titleize( $shell->name );
+		$shell->methods    = array();
 
-        $file_path = $this->file_includer->find_first_app_file_or_core_file($shell_path);
+		$shell_path = 'shells/' . $shell->shell_name . '.php';
 
-        if (!$file_path) {
-            throw new InvalidArgumentException($shell->shell_name." could not be found.\n");
-        }
+		$file_path = $this->file_includer->find_first_app_file_or_core_file( $shell_path );
 
-        $result = $this->file_includer->require_first_app_file_or_core_file($shell_path);
+		if ( ! $file_path ) {
+			throw new InvalidArgumentException( $shell->shell_name . " could not be found.\n" );
+		}
 
-        $class = new ReflectionClass($shell->class_name);
-        $methods = $class->getMethods(ReflectionMethod::IS_PUBLIC);
+		$result = $this->file_includer->require_first_app_file_or_core_file( $shell_path );
 
-        $shell->doc = $this->parse_doc_block($class->getDocComment());
+		$class   = new ReflectionClass( $shell->class_name );
+		$methods = $class->getMethods( ReflectionMethod::IS_PUBLIC );
 
-        if (empty($shell->doc)) {
-            $shell->doc = '(No Documentation)';
-        }
+		$shell->doc = $this->parse_doc_block( $class->getDocComment() );
 
-        foreach ($methods as $method) {
-            $method_name = $method->getName();
-            $method_doc_block = $this->parse_doc_block($method->getDocComment());
+		if ( empty( $shell->doc ) ) {
+			$shell->doc = '(No Documentation)';
+		}
 
-            if (!in_array($method_name, $exclude_methods)) {
-                if (empty($method_doc_block)) {
-                    $method_doc_block = '(No Documentation)';
-                }
+		foreach ( $methods as $method ) {
+			$method_name      = $method->getName();
+			$method_doc_block = $this->parse_doc_block( $method->getDocComment() );
 
-                if ($method_name == 'main') {
-                    $method_name = '(default)';
-                }
+			if ( ! in_array( $method_name, $exclude_methods ) ) {
+				if ( empty( $method_doc_block ) ) {
+					$method_doc_block = '(No Documentation)';
+				}
 
-                $shell->methods[$method_name] = $method_doc_block;
-            }
-        }
-        
-        ksort($shell->methods);
-        
-        return $shell;
-    }
+				if ( $method_name == 'main' ) {
+					$method_name = '(default)';
+				}
 
-    protected function get_available_shells() {
-        $exclude = array(
-            'mvc_shell.php',
-            'mvc_shell_dispatcher.php'
-        );
+				$shell->methods[ $method_name ] = $method_doc_block;
+			}
+		}
 
-        $pluginAppPaths = MvcConfiguration::get('PluginAppPaths');
-        $pluginAppPaths['core'] = MVC_CORE_PATH;
+		ksort( $shell->methods );
 
-        $shells = array();
+		return $shell;
+	}
 
-        foreach ($pluginAppPaths as $plugin => $path) {
-            $path = $path.'/shells';
+	protected function get_available_shells() {
+		$exclude = array(
+			'mvc_shell.php',
+			'mvc_shell_dispatcher.php',
+		);
 
-            $files = $this->file_includer->get_php_files_in_directory($path);
+		$pluginAppPaths         = MvcConfiguration::get( 'PluginAppPaths' );
+		$pluginAppPaths['core'] = MVC_CORE_PATH;
 
-            $key = MvcInflector::camelize($plugin);
+		$shells = array();
 
-            $shells[$plugin] = array();
+		foreach ( $pluginAppPaths as $plugin => $path ) {
+			$path = $path . '/shells';
 
-            foreach ($files as $file) {
-                if (!in_array($file, $exclude)) {
-                    $name = str_replace('_shell.php', '', $file);
-                    $shells[$plugin][] = $name;
-                }
-            }
-        }
+			$files = $this->file_includer->get_php_files_in_directory( $path );
 
-        return $shells;
-    }
+			$key = MvcInflector::camelize( $plugin );
 
-    /**
-     * Get a list of the available shells.
-     * Also is executed if the wpmvc console is run with no arguments.
-     * 
-     * @param mixed $args 
-     */
-    public function main($args) {
-        $shells = $this->get_available_shells();
-        $this->out('Available Shells:');
+			$shells[ $plugin ] = array();
 
-        $table = new Console_Table(
-            CONSOLE_TABLE_ALIGN_LEFT,
-            ' ',
-            1,
-            null,
-            true /* this is important when using Console_Color */
-        );
+			foreach ( $files as $file ) {
+				if ( ! in_array( $file, $exclude ) ) {
+					$name                = str_replace( '_shell.php', '', $file );
+					$shells[ $plugin ][] = $name;
+				}
+			}
+		}
 
-        foreach ($shells as $plugin => $shells) {
+		return $shells;
+	}
 
-            $plugin_label = MvcInflector::camelize(MvcInflector::underscore($plugin));
+	/**
+	 * Get a list of the available shells.
+	 * Also is executed if the wpmvc console is run with no arguments.
+	 *
+	 * @param mixed $args
+	 */
+	public function main( $args ) {
+		$shells = $this->get_available_shells();
+		$this->out( 'Available Shells:' );
 
-            for ($i = 0; $i < count($shells); $i++) {
-                if ($i > 0) {
-                    $plugin_label = ' ';
-                }
-                $shell_name = MvcInflector::camelize($shells[$i]);
-                $table->addRow(array(
-                    $plugin_label,
-                    Console_Color::convert('%_'.$shell_name.'%n')
-                ));
-            }
+		$table = new Console_Table(
+			CONSOLE_TABLE_ALIGN_LEFT,
+			' ',
+			1,
+			null,
+			true /* this is important when using Console_Color */
+		);
 
-            $table->addSeparator();
-        }
+		foreach ( $shells as $plugin => $shells ) {
 
-        $this->out($table->getTable());
+			$plugin_label = MvcInflector::camelize( MvcInflector::underscore( $plugin ) );
 
-        $this->out('To get information about a shell try:');
-        $this->out("\n\twpmvc help shell <name_of_shell>");
-    }
+			for ( $i = 0; $i < count( $shells ); $i++ ) {
+				if ( $i > 0 ) {
+					$plugin_label = ' ';
+				}
+				$shell_name = MvcInflector::camelize( $shells[ $i ] );
+				$table->addRow(
+					array(
+						$plugin_label,
+						Console_Color::convert( '%_' . $shell_name . '%n' ),
+					)
+				);
+			}
 
-    protected function parse_doc_block($text) {
-        $doc = preg_replace('/^\\s*(\\/|\\*+)[\\*]*([\\/]|[\\s{1}]\\@.*|[\\ ]*|)/um', '', $text);
+			$table->addSeparator();
+		}
 
-        return trim($doc);
-    }
+		$this->out( $table->getTable() );
 
-    /**
-     * Show documentation for a shell.
-     * Usage:
-     * wpmvc Help Shell <shell_name> [command_name]
-     * wpmvc Help Shell Generate
-     * wpmvc Help Shell Generate Scaffold
-     * @param mixed $args
-     * @return null 
-     */
-    public function shell($args) {
-        list($name, $method) = $args;
+		$this->out( 'To get information about a shell try:' );
+		$this->out( "\n\twpmvc help shell <name_of_shell>" );
+	}
 
-        if (empty($name)) {
-            $this->out('No shell given');
-            return;
-        }
+	protected function parse_doc_block( $text ) {
+		$doc = preg_replace( '/^\\s*(\\/|\\*+)[\\*]*([\\/]|[\\s{1}]\\@.*|[\\ ]*|)/um', '', $text );
 
-        try {
-            $shell = $this->get_shell_meta($name);
-        } catch (Exception $ex) {
-            $this->out('Error:');
-            $this->out($ex->getMessage());
-            return;
-        }
-        
-        $this->nl();
-        $this->out(Console_Color::convert('%UShells > %n%U%9'.$shell->title.'%n'));
-        $this->nl();
-        $this->out($shell->doc);
-        $this->nl(2);
-        $this->out('Commands:');
+		return trim( $doc );
+	}
 
-        $table = new Console_Table(
-            CONSOLE_TABLE_ALIGN_LEFT,
-            ' ',
-            1,
-            null,
-            true // This is important when using Console_Color
-        );
+	/**
+	 * Show documentation for a shell.
+	 * Usage:
+	 * wpmvc Help Shell <shell_name> [command_name]
+	 * wpmvc Help Shell Generate
+	 * wpmvc Help Shell Generate Scaffold
+	 * @param mixed $args
+	 * @return null
+	 */
+	public function shell( $args ) {
+		list($name, $method) = $args;
 
-        if ($method == 'default') {
-            $method = '(default)';
-        }
-        
-        if (!empty($method) && !empty($shell->methods[$method])) {
-            $table->addRow(array(Console_Color::convert('%9'.$method.'%n'), $shell->methods[$method]));
-        } else {
-            foreach ($shell->methods as $method => $doc) {
-                $table->addRow(array(Console_Color::convert('%9'.$method.'%n'), $doc));
-                $table->addSeparator();
-            }
-        }
+		if ( empty( $name ) ) {
+			$this->out( 'No shell given' );
+			return;
+		}
 
-        $this->out($table->getTable());
-    }
+		try {
+			$shell = $this->get_shell_meta( $name );
+		} catch ( Exception $ex ) {
+			$this->out( 'Error:' );
+			$this->out( $ex->getMessage() );
+			return;
+		}
+
+		$this->nl();
+		$this->out( Console_Color::convert( '%UShells > %n%U%9' . $shell->title . '%n' ) );
+		$this->nl();
+		$this->out( $shell->doc );
+		$this->nl( 2 );
+		$this->out( 'Commands:' );
+
+		$table = new Console_Table(
+			CONSOLE_TABLE_ALIGN_LEFT,
+			' ',
+			1,
+			null,
+			true // This is important when using Console_Color
+		);
+
+		if ( $method == 'default' ) {
+			$method = '(default)';
+		}
+
+		if ( ! empty( $method ) && ! empty( $shell->methods[ $method ] ) ) {
+			$table->addRow( array( Console_Color::convert( '%9' . $method . '%n' ), $shell->methods[ $method ] ) );
+		} else {
+			foreach ( $shell->methods as $method => $doc ) {
+				$table->addRow( array( Console_Color::convert( '%9' . $method . '%n' ), $doc ) );
+				$table->addSeparator();
+			}
+		}
+
+		$this->out( $table->getTable() );
+	}
 
 }
 
-?>
+

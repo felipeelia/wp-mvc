@@ -2,4 +2,5 @@
 
 <?php $this->render_main_view(); ?>
 
-<?php get_footer(); ?>
+<?php
+get_footer();

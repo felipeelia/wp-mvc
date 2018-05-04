@@ -4,7 +4,7 @@ $wordpress_path = getenv( 'WPMVC_WORDPRESS_PATH' );
 $wordpress_path = $wordpress_path ? rtrim( $wordpress_path, '/' ) . '/' : dirname( __FILE__ ) . '/../../../../';
 
 // Allowing the CLI works with composer structure
-if (!file_exists($wordpress_path . 'wp-load.php')) {
+if ( ! file_exists( $wordpress_path . 'wp-load.php' ) ) {
 	$wordpress_path .= 'wp/';
 }
 require_once $wordpress_path . 'wp-load.php';

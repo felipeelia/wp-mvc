@@ -1,7 +1,7 @@
 <?php
 
 class MvcFormTagsHelper extends MvcHelper {
-    
+
     // Generalized method that chooses the appropriate input type based on the SQL type of the field
     static function input($field_name, $options=array()) {
         $defaults = array(
@@ -16,7 +16,7 @@ class MvcFormTagsHelper extends MvcHelper {
         $html = self::$method($field_name, $options);
         return $html;
     }
-    
+
     static function text_input($field_name, $options=array()) {
         $defaults = array(
             'id' => self::input_id($field_name),
@@ -62,7 +62,7 @@ class MvcFormTagsHelper extends MvcHelper {
         $html .= self::after_input($field_name, $options);
         return $html;
     }
-    
+
     static function textarea_input($field_name, $options=array()) {
         $defaults = array(
             'id' => self::input_id($field_name),
@@ -76,7 +76,7 @@ class MvcFormTagsHelper extends MvcHelper {
         $html .= self::after_input($field_name, $options);
         return $html;
     }
-    
+
     static function number_input($field_name, $options=array()) {
         $defaults = array(
             'id' => self::input_id($field_name),
@@ -90,7 +90,7 @@ class MvcFormTagsHelper extends MvcHelper {
         $html .= self::after_input($field_name, $options);
         return $html;
     }
-    
+
     static function email_input($field_name, $options=array()) {
         $defaults = array(
             'id' => self::input_id($field_name),
@@ -104,7 +104,7 @@ class MvcFormTagsHelper extends MvcHelper {
         $html .= self::after_input($field_name, $options);
         return $html;
     }
-    
+
     static function checkbox_input($field_name, $options=array()) {
         $defaults = array(
             'id' => self::input_id($field_name),
@@ -130,7 +130,7 @@ class MvcFormTagsHelper extends MvcHelper {
         $html .= self::after_input($field_name, $options);
         return $html;
     }
-    
+
     static function hidden_input($field_name, $options=array()) {
         $defaults = array(
             'id' => self::input_id($field_name),
@@ -142,14 +142,14 @@ class MvcFormTagsHelper extends MvcHelper {
         $html = '<input'.$attributes_html.' />';
         return $html;
     }
-    
+
     static function select_input($field_name, $options=array()) {
         $html = self::before_input($field_name, $options);
         $html .= self::select_tag($field_name, $options);
         $html .= self::after_input($field_name, $options);
         return $html;
     }
-    
+
     static function select_tag($field_name, $options=array()) {
         $defaults = array(
             'id' => self::input_id($field_name),
@@ -157,14 +157,14 @@ class MvcFormTagsHelper extends MvcHelper {
             'empty' => false,
             'value' => null
         );
-        
+
         $options = array_merge($defaults, $options);
         $options['options'] = empty($options['options']) ? array() : $options['options'];
         $attributes_html = self::attributes_html($options, 'select');
         $html = '<select'.$attributes_html.'>';
         if ($options['empty']) {
             $empty_name = is_string($options['empty']) ? $options['empty'] : '';
-            $html .= '<option value="">'.$empty_name.'</option>';
+            $html .= apply_filters( 'wpmvc_select_empty_option_html', '<option value="">'.$empty_name.'</option>', $empty_name, $field_name, $options );
         }
         foreach ($options['options'] as $key => $value) {
             if (is_object($value)) {
@@ -177,7 +177,7 @@ class MvcFormTagsHelper extends MvcHelper {
         $html .= '</select>';
         return $html;
     }
-    
+
     static function button($text, $options=array()) {
         $defaults = array(
             'id' => self::input_id($text),
@@ -189,7 +189,7 @@ class MvcFormTagsHelper extends MvcHelper {
         $html = '<button'.$attributes_html.'>'.$text.'</button>';
         return $html;
     }
-    
+
     static private function before_input($field_name, $options) {
         $defaults = array(
             'before' => ''
@@ -201,7 +201,7 @@ class MvcFormTagsHelper extends MvcHelper {
         }
         return $html;
     }
-    
+
     static private function after_input($field_name, $options) {
         $defaults = array(
             'after' => ''
@@ -210,11 +210,11 @@ class MvcFormTagsHelper extends MvcHelper {
         $html = $options['after'];
         return $html;
     }
-    
+
     static private function input_id($field_name) {
         return $field_name;
     }
-    
+
     static private function input_name($field_name) {
         return $field_name;
     }

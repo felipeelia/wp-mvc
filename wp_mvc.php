@@ -24,7 +24,7 @@ if (is_admin()) {
     // Load admin functionality
     require_once MVC_PLUGIN_PATH.'core/loaders/mvc_admin_loader.php';
     $admin_loader = new MvcAdminLoader();
-    
+
     add_action('wp_loaded', array($public_loader,'load_rewrite_rules'));
     add_action('admin_init', array($admin_loader, 'admin_init'));
     add_action('admin_menu', array($admin_loader, 'add_menu_pages'));

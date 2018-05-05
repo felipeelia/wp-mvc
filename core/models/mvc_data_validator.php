@@ -6,11 +6,11 @@ class MvcDataValidator {
 		'hostname' => '(?:[a-z0-9][-a-z0-9]*\.)*(?:[a-z0-9][-a-z0-9]{0,62})\.(?:(?:[a-z]{2}\.)?[a-z]{2,4}|museum|travel)',
 	);
 
-	public function validate( $field, $value, $rule ) {
+	public function validate( $field, $value, $rule, $data = array() ) {
 		if ( is_string( $rule ) ) {
 			if ( method_exists( $this, $rule ) ) {
 				$result = $this->{$rule}( $value );
-				if ( $result === true ) {
+				if ( true === $result ) {
 					return true;
 				}
 				$message = $result;
@@ -23,13 +23,13 @@ class MvcDataValidator {
 		}
 		if ( is_array( $rule ) ) {
 			if ( ! empty( $rule['pattern'] ) || ! empty( $rule['rule'] ) ) {
-				return $this->validate_using_array_rule( $field, $value, $rule );
+				return $this->validate_using_array_rule( $field, $value, $rule, $data );
 			}
 		}
 		MvcError::fatal( sprintf( __( "The validation rule %s wasn't defined correctly.", 'wpmvc' ), print_r( $rule, true ) ) );
 	}
 
-	private function validate_using_array_rule( $field, $value, $rule ) {
+	private function validate_using_array_rule( $field, $value, $rule, $data = array() ) {
 		$message = '';
 		if ( isset( $rule['required'] ) && ! $rule['required'] ) {
 			if ( empty( $value ) ) {
@@ -40,7 +40,11 @@ class MvcDataValidator {
 			$valid = preg_match( $rule['pattern'], $value );
 		} elseif ( isset( $rule['rule'] ) ) {
 			if ( ! is_array( $rule['rule'] ) && method_exists( $this, $rule['rule'] ) ) {
-				$result  = $this->{$rule['rule']}( $value );
+				if ( 'match_field' == $rule['rule'] && ! empty( $rule['field'] ) ) {
+					$result = $this->{$rule['rule']}( $field, $rule['field'], $data );
+				} else {
+					$result  = $this->{$rule['rule']}( $value );
+				}
 				$valid   = ( true === $result );
 				$message = $result;
 			} elseif ( is_callable( $rule['rule'] ) ) {
@@ -121,6 +125,14 @@ class MvcDataValidator {
 			return true;
 		} else {
 			return __( '{field} must be a valid URL.', 'wpmvc' );
+		}
+	}
+
+	private function match_field( $field_name, $field_to_match, $data ) {
+		if ( isset( $data[ $field_name ] ) && isset( $data[ $field_to_match ] ) && $data[ $field_name ] === $data[ $field_to_match ] ) {
+			return true;
+		} else {
+			return __( 'The fields don\'t match', 'wpmvc' );
 		}
 	}
 

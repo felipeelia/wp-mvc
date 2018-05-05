@@ -541,7 +541,7 @@ class MvcModel {
 				}
 			}
 		} else {
-			$valid = $this->data_validator->validate( $field_name, $field_value, $rule );
+			$valid = $this->data_validator->validate( $field_name, $field_value, $rule, $data );
 			if ( true !== $valid ) {
 				$errors[] = $valid;
 			}

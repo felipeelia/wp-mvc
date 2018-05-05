@@ -39,10 +39,17 @@ class MvcDataValidator {
 		if ( isset( $rule['pattern'] ) ) {
 			$valid = preg_match( $rule['pattern'], $value );
 		} elseif ( isset( $rule['rule'] ) ) {
-			if ( method_exists( $this, $rule['rule'] ) ) {
+			if ( ! is_array( $rule['rule'] ) && method_exists( $this, $rule['rule'] ) ) {
 				$result  = $this->{$rule['rule']}( $value );
-				$valid   = $result === true ? true : false;
+				$valid   = ( true === $result );
 				$message = $result;
+			} elseif ( is_callable( $rule['rule'] ) ) {
+				$valid   = call_user_func( $rule['rule'], $value );
+				$message = sprintf(
+					/* translators: rule name */
+					__( "{field} didn't pass rule %s.", 'wpmvc' ),
+					implode( '->', (array) $rule['rule'] )
+				);
 			}
 		}
 		if ( $valid ) {
@@ -142,5 +149,3 @@ class MvcDataValidator {
 	}
 
 }
-
-

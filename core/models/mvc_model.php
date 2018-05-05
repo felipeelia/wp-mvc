@@ -506,7 +506,7 @@ class MvcModel {
 	}
 
 	protected function validate_data( $data ) {
-		if ( $this->validation_mode == 'all' ) {
+		if ( 'all' == $this->validation_mode ) {
 			return $this->validate_all_data( $data );
 		}
 		if ( ! is_null( $this->validation_error ) ) {
@@ -515,37 +515,55 @@ class MvcModel {
 		$rules = $this->validate;
 		if ( ! empty( $rules ) ) {
 			foreach ( $rules as $field => $rule ) {
-				if ( isset( $data[ $field ] ) ) {
-					$valid = $this->data_validator->validate( $field, $data[ $field ], $rule );
-					if ( $valid !== true ) {
-						$this->validation_error      = $valid;
-						$this->validation_error_html = $this->validation_error->get_html();
-						$this->invalid_data          = $data;
-						return $valid;
-					}
+				$errors = $this->apply_validation( $field, $data, $rule, true );
+				if ( count( $errors ) ) {
+					$this->invalid_data          = $data;
+					$this->validation_error      = current( $errors );
+					$this->validation_error_html = current( $this->validation_error )->get_html();
+					return current( $errors );
 				}
 			}
 		}
 		return true;
 	}
 
+	protected function apply_validation( $field_name, $data, $rule, $return_first, $errors = array() ) {
+		if ( ! is_array( $errors ) ) {
+			$errors = array();
+		}
+		$field_value = ( isset( $data[ $field_name ] ) ) ? $data[ $field_name ] : '';
+		if ( is_array( $rule ) && empty( $rule['pattern'] ) && empty( $rule['rule'] ) ) {
+			$rules = $rule;
+			foreach ( $rules as $rule ) {
+				$errors = array_merge( $errors, $this->apply_validation( $field_name, $data, $rule, $errors ) );
+				if ( $return_first && count( $errors ) ) {
+					break;
+				}
+			}
+		} else {
+			$valid = $this->data_validator->validate( $field_name, $field_value, $rule );
+			if ( true !== $valid ) {
+				$errors[] = $valid;
+			}
+		}
+		return $errors;
+	}
+
 	protected function validate_all_data( $data ) {
 		$rules = $this->validate;
 		if ( ! empty( $rules ) ) {
-			$error_arr = array();
+			$errors = array();
 			foreach ( $rules as $field => $rule ) {
-				if ( isset( $data[ $field ] ) ) {
-					$valid = $this->data_validator->validate( $field, $data[ $field ], $rule );
-					if ( $valid !== true ) {
-						$error_arr[] = $valid;
-					}
+				$field_errors = $this->apply_validation( $field, $data, $rule, false );
+				if ( count( $field_errors ) ) {
+					$errors = array_merge( $errors, $field_errors );
 				}
 			}
-			if ( ! empty( $error_arr ) || ! is_null( $this->validation_error ) ) {
-				$this->validation_error      = is_null( $this->validation_error ) ? $error_arr : array_merge( $this->validation_error, $error_arr );
+			if ( count( $errors ) ) {
+				$this->validation_error      = $errors;
 				$this->validation_error_html = '';
 				$this->invalid_data          = $data;
-				return $error_arr;
+				return $errors;
 			}
 		}
 		return true;

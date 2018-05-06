@@ -419,7 +419,7 @@ class MvcModel {
 		return $options;
 	}
 
-	private function update_associations( $id, $model_data ) {
+	protected function update_associations( $id, $model_data ) {
 		if ( ! empty( $this->associations ) ) {
 			foreach ( $this->associations as $association ) {
 				switch ( $association['type'] ) {
@@ -434,7 +434,7 @@ class MvcModel {
 		}
 	}
 
-	private function update_has_many_associations( $object_id, $association, $model_data ) {
+	protected function update_has_many_associations( $object_id, $association, $model_data ) {
 		$association_name = $association['name'];
 		if ( ! empty( $model_data[ $association_name ] ) ) {
 			if ( isset( $model_data[ $association_name ]['ids'] ) ) {
@@ -447,7 +447,7 @@ class MvcModel {
 		}
 	}
 
-	private function update_has_and_belongs_to_many_associations( $object_id, $association, $model_data ) {
+	protected function update_has_and_belongs_to_many_associations( $object_id, $association, $model_data ) {
 		$association_name = $association['name'];
 		if ( ! empty( $model_data[ $association_name ] ) ) {
 			if ( isset( $model_data[ $association_name ]['ids'] ) ) {
@@ -517,10 +517,11 @@ class MvcModel {
 			foreach ( $rules as $field => $rule ) {
 				$errors = $this->apply_validation( $field, $data, $rule, true );
 				if ( count( $errors ) ) {
+					$error                       = current( $errors );
 					$this->invalid_data          = $data;
-					$this->validation_error      = current( $errors );
-					$this->validation_error_html = current( $this->validation_error )->get_html();
-					return current( $errors );
+					$this->validation_error      = $error;
+					$this->validation_error_html = $error->get_html();
+					return $error;
 				}
 			}
 		}

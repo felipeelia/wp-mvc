@@ -36,18 +36,18 @@ class MvcController {
 			$method                = $underscore . '_url';
 			$this->html->{$method} = create_function(
 				'$object, $options=array()', '
-                $defaults = array("controller" => "' . $tableize . '", "action" => "show");
-                $options = array_merge($defaults, $options);
-                return HtmlHelper::object_url($object, $options);
-            '
+				$defaults = array("controller" => "' . $tableize . '", "action" => "show");
+				$options = array_merge($defaults, $options);
+				return HtmlHelper::object_url($object, $options);
+			'
 			);
 			$method                = $underscore . '_link';
 			$this->html->{$method} = create_function(
 				'$object, $options=array()', '
-                $defaults = array("controller" => "' . $tableize . '", "action" => "show");
-                $options = array_merge($defaults, $options);
-                return HtmlHelper::object_link($object, $options);
-            '
+				$defaults = array("controller" => "' . $tableize . '", "action" => "show");
+				$options = array_merge($defaults, $options);
+				return HtmlHelper::object_link($object, $options);
+			'
 			);
 		}
 
@@ -319,20 +319,20 @@ class MvcController {
 				$classes   = array();
 				$classes[] = $type;
 				if ( $this->is_admin ) {
-					if ( $type == 'notice' ) {
+					if ( 'notice' == $type ) {
 						$classes[] = 'updated';
 					}
 				}
 				$html .= '
-                    <div id="message" class="' . implode( ' ', $classes ) . '">
-                        <p>
-                            ' . $message . '
-                        </p>
-                    </div>';
+					<div id="message" class="' . implode( ' ', $classes ) . '">
+						<p>
+							' . $message . '
+						</p>
+					</div>';
 				$this->unset_flash( $type );
 			}
 		}
-		echo $html;
+		echo apply_filters( 'wpmvc_display_flash_html', $html, $flashes );
 	}
 
 	private function init_flash() {
@@ -352,9 +352,9 @@ class MvcController {
 		// this will almost always be done with JS instead of wp_redirect().
 		if ( headers_sent() ) {
 			$html = '
-                <script type="text/javascript">
-                    window.location = "' . $location . '";
-                </script>';
+				<script type="text/javascript">
+					window.location = "' . $location . '";
+				</script>';
 			echo $html;
 		} else {
 			wp_redirect( $location, $status );
@@ -369,5 +369,3 @@ class MvcController {
 	}
 
 }
-
-

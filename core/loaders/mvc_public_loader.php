@@ -84,13 +84,15 @@ class MvcPublicLoader extends MvcLoader {
 
 		// Do the same as above for route params that are defined as route defaults (e.g. array('action' => 'show'))
 		if ( ! empty( $route_defaults ) ) {
-			foreach ( $route_defaults as $query_var => $value ) {
-				$query_var = 'mvc_' . $query_var;
-				if ( $query_var != 'mvc_controller' ) {
-					$query_var_match_string .= '&' . $query_var . '=' . $value;
-					$query_vars[]            = $query_var;
+			$route_parameters = array();
+			foreach ( $route_defaults as $key => $value ) {
+				if ( 'controller' !== $key ) {
+					$route_parameters[ 'mvc_' . $key ] = $value;
 				}
 			}
+
+			$query_var_match_string = '&' . http_build_query( $route_parameters );
+			$query_vars             = array_merge( $query_vars, array_keys( $route_parameters ) );
 		}
 
 		$this->query_vars = array_unique( array_merge( $this->query_vars, $query_vars ) );
@@ -172,5 +174,3 @@ class MvcPublicLoader extends MvcLoader {
 	}
 
 }
-
-

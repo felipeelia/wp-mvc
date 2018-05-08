@@ -124,6 +124,7 @@ class MvcHelper {
 				'tabindex',
 				'title',
 				'xml:lang',
+				'placeholder',
 				$event_attributes['form'],
 			),
 			'select'   => array(

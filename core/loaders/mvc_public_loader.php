@@ -91,8 +91,8 @@ class MvcPublicLoader extends MvcLoader {
 				}
 			}
 
-			$query_var_match_string = '&' . http_build_query( $route_parameters );
-			$query_vars             = array_merge( $query_vars, array_keys( $route_parameters ) );
+			$query_var_match_string .= '&' . http_build_query( $route_parameters );
+			$query_vars              = array_merge( $query_vars, array_keys( $route_parameters ) );
 		}
 
 		$this->query_vars = array_unique( array_merge( $this->query_vars, $query_vars ) );

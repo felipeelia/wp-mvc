@@ -152,7 +152,9 @@ class MvcHelper {
 
 		if ( ! empty( $valid_attributes_array_or_tag ) ) {
 			$valid_attributes = is_array( $valid_attributes_array_or_tag ) ? $valid_attributes_array_or_tag : $valid_attributes_by_tag[ $valid_attributes_array_or_tag ];
-			$attributes       = array_intersect_key( $attributes, array_flip( $valid_attributes ) );
+			$attributes       = array_filter( $attributes, function( $k ) use ( $valid_attributes ) {
+				return ( in_array( $k, $valid_attributes ) || preg_match( '/data-(.*)/', $k ) );
+			}, ARRAY_FILTER_USE_KEY );
 		}
 
 		$attributes_html = '';
@@ -256,5 +258,3 @@ class MvcHelper {
 	}
 
 }
-
-

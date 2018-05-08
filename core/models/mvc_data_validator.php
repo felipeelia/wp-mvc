@@ -43,12 +43,12 @@ class MvcDataValidator {
 				if ( 'match_field' == $rule['rule'] && ! empty( $rule['field'] ) ) {
 					$result = $this->{$rule['rule']}( $field, $rule['field'], $data );
 				} else {
-					$result  = $this->{$rule['rule']}( $value );
+					$result = $this->{$rule['rule']}( $value );
 				}
 				$valid   = ( true === $result );
 				$message = $result;
 			} elseif ( is_callable( $rule['rule'] ) ) {
-				$valid   = call_user_func( $rule['rule'], $value );
+				$valid   = call_user_func( $rule['rule'], $value, $data );
 				$message = sprintf(
 					/* translators: rule name */
 					__( "{field} didn't pass rule %s.", 'wpmvc' ),

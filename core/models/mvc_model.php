@@ -91,13 +91,13 @@ class MvcModel {
 			$data = array( $this->name => $data );
 		}
 		$model_data = $data[ $this->name ];
+		$valid      = $this->validate_data( $model_data );
 		if ( method_exists( $this, 'before_save' ) ) {
 			if ( ! $this->before_save( $model_data ) ) {
 				return false;
 			}
 		}
-		$valid = $this->validate_data( $model_data );
-		if ( $valid !== true ) {
+		if ( true !== $valid ) {
 			return false;
 		}
 		$id = $this->insert( $model_data );
@@ -128,7 +128,7 @@ class MvcModel {
 				return false;
 			}
 			if ( method_exists( $this, 'before_save' ) ) {
-				if ( ! $this->before_save( $model_data ) ) {
+				if ( ! $this->before_save( $model_data, $id ) ) {
 					return false;
 				}
 			}

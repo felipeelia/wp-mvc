@@ -92,13 +92,13 @@ class MvcModel {
 		}
 		$model_data = $data[ $this->name ];
 		$valid      = $this->validate_data( $model_data );
+		if ( true !== $valid ) {
+			return false;
+		}
 		if ( method_exists( $this, 'before_save' ) ) {
 			if ( ! $this->before_save( $model_data ) ) {
 				return false;
 			}
-		}
-		if ( true !== $valid ) {
-			return false;
 		}
 		$id = $this->insert( $model_data );
 		$this->update_associations( $id, $model_data );

@@ -319,7 +319,7 @@ class MvcModel {
 			$keywords = preg_split( '/[\s]+/', $keywords );
 		}
 		$formatted_fields = array();
-		foreach ( $fields as $field ) {
+		foreach ( (array) $fields as $field ) {
 			if ( strpos( $field, '.' ) === false ) {
 				$field = $this->name . '.' . $field;
 			}

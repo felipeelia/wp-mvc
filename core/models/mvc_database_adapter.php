@@ -136,7 +136,15 @@ class MvcDatabaseAdapter {
 				}
 				$sql_clauses[] = $this->escape( $key ) . $operator . $value;
 			} else {
-				$sql_clauses[] = $this->escape( $key ) . $operator . '"' . $this->escape( $value ) . '"';
+				// Avoid WP messing with LIKE comparisons, like in MvcModel::get_keyword_conditions().
+				if ( preg_match( '/^%(.*?)%$/', $value ) ) {
+					$value = substr( $value, 1, -1 );
+					$value = '%' . $this->escape( $value ) . '%';
+				} else {
+					$value = $this->escape( $value );
+				}
+
+				$sql_clauses[] = $this->escape( $key ) . $operator . '"' . $value . '"';
 			}
 		}
 		return $sql_clauses;

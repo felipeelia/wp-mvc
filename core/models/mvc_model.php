@@ -436,12 +436,20 @@ class MvcModel {
 
 	protected function update_has_many_associations( $object_id, $association, $model_data ) {
 		$association_name = $association['name'];
-		if ( ! empty( $model_data[ $association_name ] ) ) {
+		if ( ! empty( $model_data[ $association_name ] ) && class_exists( $association_name ) ) {
+			$association_model = MvcModelRegistry::get_model( $association['class'] );
 			if ( isset( $model_data[ $association_name ]['ids'] ) ) {
 				if ( ! empty( $model_data[ $association_name ]['ids'] ) ) {
 					// To do: Implement this by first emptying the foreign key values of associated records
 					// that currently equal $object_id, then loop through 'ids', setting those foreign key
 					// values.
+				}
+			} elseif ( is_array( $model_data[ $association_name ] ) ) {
+				foreach ( $model_data[ $association_name ] as $obj ) {
+					$obj = array_merge( (array) $obj, array(
+						$association['foreign_key'] => $object_id,
+					) );
+					$association_model->save( $obj );
 				}
 			}
 		}

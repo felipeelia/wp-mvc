@@ -152,7 +152,18 @@ class MvcDatabaseAdapter {
 
 	public function get_order_sql( $options = array() ) {
 		$order = empty( $options['order'] ) ? $this->defaults['order'] : $options['order'];
-		return $order ? 'ORDER BY ' . $this->escape( $order ) : '';
+
+		// Whitelist FIELD calls in order clause.
+		$field_occurrence = preg_match( '/(FIELD\([^\)]*\)).*/', $order, $matches );
+		if ( $field_occurrence ) {
+			$order = preg_replace( '/(FIELD\([^\)]*\))/', 'FIELD_PLACEHOLDER', $order );
+			$order = $this->escape( $order );
+			$order = str_replace( 'FIELD_PLACEHOLDER', $matches[1], $order );
+		} else {
+			$order = $this->escape( $order );
+		}
+
+		return $order ? 'ORDER BY ' . $order : '';
 	}
 
 	public function get_limit_sql( $options = array() ) {

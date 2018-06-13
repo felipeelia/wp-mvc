@@ -171,7 +171,7 @@ class MvcFormTagsHelper extends MvcHelper {
 				$key   = $value->__id;
 				$value = $value->__name;
 			}
-			$selected_attribute = $options['value'] == $key ? ' selected="selected"' : '';
+			$selected_attribute = selected( $options['value'], $key, false );
 			$html              .= '<option value="' . self::esc_attr( $key ) . '"' . $selected_attribute . '>' . $value . '</option>';
 		}
 		$html .= '</select>';
